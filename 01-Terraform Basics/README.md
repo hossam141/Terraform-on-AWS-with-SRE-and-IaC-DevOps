@@ -1,4 +1,4 @@
-- Terraform Core Commands:
+#Terraform Core Commands:
 
 # Initialize Terraform
 
