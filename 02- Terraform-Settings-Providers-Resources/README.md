@@ -124,20 +124,4 @@ terraform destroy
 rm -rf .terraform*
 rm -rf terraform.tfstate*
 ```
-
-
-## Step-10: Additional Observations - Concepts we will learn in next section
-- EC2 Instance created we didn't associate a EC2 Key pair to login to EC2 Instance 
-  - Terraform Resource Argument - `Key Name`
-- AMI Name is static - How to make it Dynamic ?
-  - Use `Terraform Datasources` concept
-- We didn't create multiple instances of same EC2 Instance
-  - Resource Meta-Argument: `count` 
-- We didn't add any variables for parameterizations
-  - Terraform `Input Variable` Basics
-- We didn't extract any information on terminal about instance information 
-  -  Terraform `Outputs`
-- Create second resource only after first resource is created
-  - Defining Explicit Dependency in Terraform using Resource Meta-Argument `depends_on`
-- WE ARE GOING TO LEARN ALL THE ABOVE CONCEPTS IN NEXT SECTION
   
