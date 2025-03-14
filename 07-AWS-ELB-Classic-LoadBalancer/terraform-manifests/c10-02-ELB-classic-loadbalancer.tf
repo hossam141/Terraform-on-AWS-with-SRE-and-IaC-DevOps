@@ -1,6 +1,6 @@
 module "elb" {
   source  = "terraform-aws-modules/elb/aws"
-  version = "2.5.0"
+  version = "4.0.1"
   
   name = "${local.name}-myelb"
 
@@ -8,7 +8,7 @@ module "elb" {
     module.vpc.public_subnets[0],
     module.vpc.public_subnets[1]
   ]
-  security_groups = [module.loadbalancer_sg.this_security_group_id]
+  security_groups = [module.loadbalancer_sg.security_group_id]
   #internal        = false
 
   listener = [
@@ -35,8 +35,8 @@ module "elb" {
   }
 
   // ELB attachments
-  number_of_instances = var.private_instance_count
-  instances           = [module.ec2_private.id[0],module.ec2_private.id[1]]
+  number_of_instances = length(module.ec2_private)
+  instances           = [for ec2private in module.ec2_private: ec2private.id ] 
 
   tags = local.common_tags
 }

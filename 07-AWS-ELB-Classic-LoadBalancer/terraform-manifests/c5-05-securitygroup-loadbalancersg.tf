@@ -1,7 +1,6 @@
 # Security Group for Public Load Balancer
 module "loadbalancer_sg" {
   source  = "terraform-aws-modules/security-group/aws"
-  #version = "3.18.0"
   version = "5.1.0"
 
   name = "loadbalancer-sg"
