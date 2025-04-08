@@ -1,6 +1,6 @@
 # AWS Classic Load Balancer with Terraform
 
-![CLB Arch](classic elb.png)
+![CLB](classic-elb.png)
 
 ## Step-01: Introduction
 - Create AWS Security Group module for ELB CLB Load Balancer
