@@ -31,8 +31,8 @@ module "alb" {
       protocol                    = "HTTPS"
       ssl_policy                  = "ELBSecurityPolicy-TLS13-1-2-Res-2021-06"
       certificate_arn             = module.acm.acm_certificate_arn
-       
-       # Fixed Response for Root Context 
+        
+        # Fixed Response for Root Context         
        fixed_response = {
         content_type = "text/plain"
         message_body = "Fixed Static message - for Root Context"
@@ -41,8 +41,9 @@ module "alb" {
 
       # Load Balancer Rules
       rules = {
-        # Rule-1: myapp1-rule
+        # Rule-1: myapp1-rule - custom-header=my-app-1 should go to App1 EC2 Instances
         myapp1-rule = {
+          priority = 1
           actions = [{
             type = "weighted-forward"
             target_groups = [
@@ -57,13 +58,15 @@ module "alb" {
             }
           }]
           conditions = [{
-            host_header = {
-              values = [var.app1_dns_name]
+            http_header = {
+              http_header_name = "custom-header"
+              values           = ["app-1", "app1", "my-app-1"]
             }
           }]
         }# End of myapp1-rule
-        # Rule-2: myapp2-rule
+        # Rule-2: myapp2-rule - custom-header=my-app-2 should go to App2 EC2 Instances    
         myapp2-rule = {
+          priority = 2
           actions = [{
             type = "weighted-forward"
             target_groups = [
@@ -78,19 +81,61 @@ module "alb" {
             }
           }]
           conditions = [{
-            host_header = {
-              values = [var.app2_dns_name]
+            http_header = {
+              http_header_name = "custom-header"
+              values           =  ["app-2", "app2", "my-app-2"]
             }
           }]
         }# End of myapp2-rule Block
-      }# End Rules Block
-    }# End my-https-listener Block
-  }# End Listeners Block
+
+        # Rule-3: Query String Redirect Redirect Rule
+        my-redirect-query = {
+          priority = 3
+          actions = [{
+            type        = "redirect"
+            status_code = "HTTP_302"
+            host        = "stacksimplify.com"
+            path        = "/aws-eks/"
+            query       = ""
+            protocol    = "HTTPS"
+          }]
+
+          conditions = [{
+            query_string = {
+              key   = "website"
+              value = "aws-eks"
+            }
+          }]
+        }# End of Rule-3 Query String Redirect Redirect Rule
+        # Rule-4: Host Header Redirect
+        my-redirect-hh = {
+          priority = 4
+          actions = [{
+            type        = "redirect"
+            status_code = "HTTP_302"
+            host        = "stacksimplify.com"
+            path        = "/azure-aks/azure-kubernetes-service-introduction/"
+            query       = ""
+            protocol    = "HTTPS"
+          }]
+
+          conditions = [{
+            host_header = {
+              values = ["azure-aks11.devopsincloud.com"]
+            }
+          }]
+        }# Rule-4: Host Header Redirect        
+      }# End Rules    
+    }# End Listener-2: my-https-listener
+  }# End Listeners
 
 # Target Groups
   target_groups = {
-  # Target Group-1: mytg1  
+  # Target Group-1: mytg1    
    mytg1 = {
+      # VERY IMPORTANT: We will create aws_lb_target_group_attachment resource separately when we use create_attachment = false, refer above GitHub issue URL.
+      ## Github ISSUE: https://github.com/terraform-aws-modules/terraform-aws-alb/issues/316
+      ## Search for "create_attachment" to jump to that Github issue solution    
       create_attachment = false
       name_prefix                       = "mytg1-"
       protocol                          = "HTTP"
@@ -115,6 +160,9 @@ module "alb" {
 
   # Target Group-1: mytg2   
    mytg2 = {
+      # VERY IMPORTANT: We will create aws_lb_target_group_attachment resource separately when we use create_attachment = false, refer above GitHub issue URL.
+      ## Github ISSUE: https://github.com/terraform-aws-modules/terraform-aws-alb/issues/316
+      ## Search for "create_attachment" to jump to that Github issue solution    
       create_attachment = false
       name_prefix                       = "mytg2-"
       protocol                          = "HTTP"
@@ -135,7 +183,7 @@ module "alb" {
         matcher             = "200-399"
       }
       tags = local.common_tags # Target Group Tags 
-    } # END of Target Group-2: mytg2
+    }# END of Target Group-2: mytg2
   } # END OF target_groups
   tags = local.common_tags # ALB Tags
 }
@@ -155,3 +203,4 @@ resource "aws_lb_target_group_attachment" "mytg2" {
   target_id        = each.value.id
   port             = 80
 }
+
